@@ -1,17 +1,16 @@
 <?php
-
-function generateURL($type, $hash, $cdndir = "wow")
-{
+function generateURL($type, $hash, $cdndir = "wow") {
     return "tpr/" . $cdndir . "/" . $type . "/" . $hash[0] . $hash[1] . "/" . $hash[2] . $hash[3] . "/" . $hash;
 }
 
-function flushQueryCache()
-{
+function flushQueryCache() {
     global $memcached;
+
     $keys = $memcached->getAllKeys();
     $prefix = "query";
-    foreach ($keys as $index => $key) {
-        if (strpos($key, $prefix) !== 0) {
+
+    foreach($keys as $index => $key) {
+        if(strpos($key, $prefix) !== 0) {
             unset($keys[$index]);
         } else {
             $memcached->delete($key);
@@ -19,21 +18,19 @@ function flushQueryCache()
     }
 }
 
-function doesFileExist($type, $hash, $cdndir = "wow")
-{
-    if (strlen($hash) < 32) {
+function doesFileExist($type, $hash, $cdndir = "wow") {
+    if(strlen($hash) < 32) {
         die("Empty hash! Hash: " . $hash . " Type: " . $type);
     }
 
-    if (file_exists(__DIR__ . "/../" . generateURL($type, $hash, $cdndir))) {
+    if(file_exists(__DIR__ . "/../" . generateURL($type, $hash, $cdndir))) {
         return true;
     } else {
         return false;
     }
 }
 
-function parseBuildName($buildname)
-{
+function parseBuildName($buildname) {
     $build = [];
     $build['original'] = $buildname;
 
@@ -46,117 +43,136 @@ function parseBuildName($buildname)
     $build['patch'] = $descexpl[0];
     $build['build'] = $buildnum;
     $build['branch'] = $descexpl[1];
+
     return $build;
 }
 
-function generateMeta($queryString)
-{
+function generateMeta($queryString) {
     $url = parse_url($queryString);
     $tags = [];
 
-    if (!empty($url['path'])) {
-        switch ($url['path']) {
+    if(!empty($url['path'])) {
+        switch($url['path']) {
             case "/":
             case "/index.php":
             default:
                 $desc = "Collection of several World of Warcraft tools (DBC/file browser, modelviewer & more).";
-                break;
+            break;
+
             case "/dbc/":
             case "/dbc/diff.php":
                 $desc = "Web database/DBC browser for World of Warcraft";
-                break;
+            break;
+
             case "/dbc/hotfixes.php":
             case "/dbc/hotfix_log.php":
                 $desc = "Details about hotfixes for World of Warcraft";
-                break;
+            break;
+
             case "/files/":
                 $desc = "Web file browser for World of Warcraft game assets";
-                break;
+            break;
+
             case "/mv/":
                 $desc = "Web model viewer for World of Warcraft versions 6.x-9.x";
-                break;
+            break;
+
             case "/maps/":
                 $desc = "Top-down map/minimap viewer for World of Warcraft";
-                break;
+            break;
+
             case "/monitor/":
                 $desc = "Blizzard patch server monitor";
-                break;
+            break;
+
             case "/builds/":
                 $desc = "List of all World of Warcraft versions since 6.0 (including diff tool)";
-                break;
+            break;
+
             case "/export/":
                 $desc = "Model, map, sound and cinematic exporter for World of Warcraft";
-                break;
+            break;
+
             case "/realms/":
                 $desc = "Realm status for US, EU and PTR World of Warcraft realms";
-                break;
+            break;
+
             case "/uploader/":
                 $desc = "Contribute data to WoW.tools by automatically uploading hotfixes";
-                break;
+            break;
         }
 
         $tags[] = "<meta name='description' content='" . $desc . "'>";
-        $tags[] = "	<meta property='og:description' content='" . $desc . "'>";
+        $tags[] = "<meta property='og:description' content='" . $desc . "'>";
     }
 
-    $tags[] = "	<meta property='og:type' content='website'>";
-    $tags[] = "	<meta property='og:site_name' content='WoW.tools'>";
-    $tags[] = "	<meta property='og:title' content='" . prettyTitle($queryString) . "'>";
-    $tags[] = "	<meta property='og:image' content='https://wow.tools/img/cogw.png'>";
-    $tags[] = "	<meta property='twitter:image' content='https://wow.tools/img/cogw.png'>";
-    $tags[] = "	<meta property='twitter:card' content='summary'>";
-    $tags[] = "	<meta property='twitter:site' content='@Marlamin'>";
-    $tags[] = "	<meta name='application-name' content='WoW.tools'>";
-    $tags[] = "	<meta name='apple-mobile-web-app-title' content='WoW.tools'>";
-    $tags[] = "	<meta name='theme-color' content='#343a40'>";
+    $tags[] = "<meta property='og:type' content='website'>";
+    $tags[] = "<meta property='og:site_name' content='WoW.tools'>";
+    $tags[] = "<meta property='og:title' content='" . prettyTitle($queryString) . "'>";
+    $tags[] = "<meta property='og:image' content='https://wow.tools/img/cogw.png'>";
+    $tags[] = "<meta property='twitter:image' content='https://wow.tools/img/cogw.png'>";
+    $tags[] = "<meta property='twitter:card' content='summary'>";
+    $tags[] = "<meta property='twitter:site' content='@Marlamin'>";
+    $tags[] = "<meta name='application-name' content='WoW.tools'>";
+    $tags[] = "<meta name='apple-mobile-web-app-title' content='WoW.tools'>";
+    $tags[] = "<meta name='theme-color' content='#343a40'>";
     $tags[] = "";
+
     return implode("\n", $tags);
 }
 
-function prettyTitle($queryString)
-{
+function prettyTitle($queryString) {
     $url = parse_url($queryString);
     $addendum = "";
 
-    if (empty($url['path'])) {
+    if(empty($url['path'])) {
         return "WoW.tools";
     }
 
-    switch ($url['path']) {
+    switch($url['path']) {
         case "/":
         case "/index.php":
             $addendum = "Home";
-            break;
+        break;
+
         case "/dbc/":
             $addendum = "Database browser";
-            break;
+        break;
+
         case "/files/":
             $addendum = "File browser";
-            break;
+        break;
+
         case "/mv/":
             $addendum = "Model viewer";
-            break;
+        break;
+
         case "/maps/":
             $addendum = "Minimaps";
-            break;
+        break;
+
         case "/monitor/":
             $addendum = "Monitor";
-            break;
+        break;
+
         case "/builds/":
             $addendum = "Builds";
-            break;
+        break;
+
         case "/export/":
             $addendum = "Export";
-            break;
+        break;
+
         case "/realms/":
             $addendum = "Realm status";
-            break;
+        break;
+
         case "/uploader/":
             $addendum = "Hotfix uploader";
-            break;
+        break;
     }
 
-    if (!empty($addendum)) {
+    if(!empty($addendum)) {
         return "WoW.tools | " . $addendum;
     } else {
         // trigger_error("Unable to find title for querystring " . $queryString);
@@ -164,247 +180,266 @@ function prettyTitle($queryString)
     }
 }
 
-function prettyBranch($branch, $realPretty = true)
-{
-    switch ($branch) {
+function prettyBranch($branch, $realPretty = true) {
+    switch($branch) {
         case "wow":
             $color = "primary";
             $branch = "Retail";
-            break;
+        break;
+
         case "wowt":
             $color = "warning";
             $branch = "PTR";
-            break;
+        break;
+
         case "wow_beta":
             $color = "danger";
             $branch = "Beta";
-            break;
+        break;
+
         case "wowz":
             $color = "success";
             $branch = "Submission";
-            break;
+        break;
+
         case "wow_classic":
             $color = "info";
             $branch = "Classic";
-            break;
+        break;
+
         case "wow_classic_beta":
             $color = "info";
             $branch = "Classic Beta";
-            break;
+        break;
+
         case "wow_classic_ptr":
             $color = "info";
             $branch = "Classic PTR";
-            break;
+        break;
+
         case "wowe1":
             $color = "secondary";
             $branch = "Event 1";
-            break;
+        break;
+
         case "wowe2":
             $color = "secondary";
             $branch = "Event 2";
-            break;
+        break;
+
         case "wowe3":
             $color = "secondary";
             $branch = "Event 3";
-            break;
+        break;
+
         case "wowlivetest":
             $color = "secondary";
             $branch = "Live Test";
-            break;
+        break;
+
         default:
             $color = "danger";
             $branch = "unknown (" . $branch . ")";
     }
 
-    if ($realPretty) {
+    if($realPretty) {
         return "<span class='badge badge-" . $color . "'>" . $branch . "</span>";
     } else {
         return $branch;
     }
 }
 
-function prettyBuild($build)
-{
+function prettyBuild($build) {
     $parsedBuild = parseBuildName($build);
     return $parsedBuild['full'] . " (" . $parsedBuild['branch'] . ")";
 }
 
-function parseBPSV($bpsv)
-{
+function parseBPSV($bpsv) {
     $result = [];
     $headers = [];
-    foreach ($bpsv as $key => $line) {
-        if (empty(trim($line))) {
+
+    foreach($bpsv as $key => $line) {
+        if(empty(trim($line))) {
             continue;
         }
-        if ($line[0] == "#") {
+
+        if($line[0] == "#") {
             continue;
         }
+
         $cols = explode("|", $line);
-        if ($key == 0) {
-            foreach ($cols as $key => $col) {
+
+        if($key == 0) {
+            foreach($cols as $key => $col) {
                 $exploded = explode("!", $col);
                 $headers[] = $exploded[0];
             }
         } else {
-            foreach ($cols as $key => $col) {
+            foreach($cols as $key => $col) {
                 $result[$cols[0]][$headers[$key]] = $col;
             }
         }
     }
+
     return $result;
 }
 
-function parseConfig($file)
-{
+function parseConfig($file) {
     $handle = fopen($file, "r");
     $config = array();
     $t = explode("/", $file);
+
     $config['original-filename'] = basename($file);
 
-    if (strlen($t[9]) == 2) {
+    if(strlen($t[9]) == 2) {
         die("Faulty config!");
     }
 
-    if ($handle) {
-        while (($line = fgets($handle)) !== false) {
+    if($handle) {
+        while(($line = fgets($handle)) !== false) {
             $line = trim($line);
-            if (empty($line) || $line[0] == "#") {
+
+            if(empty($line) || $line[0] == "#") {
                 continue;
             }
+
             $vars = explode(" = ", $line);
-            if ($vars[0] == "patch-entry") {
-                if (!isset($config['patch-entry'])) {
+
+            if($vars[0] == "patch-entry") {
+                if(!isset($config['patch-entry'])) {
                     $config['patch-entry'] = array();
                 }
 
                 // Patch entry has double entries, append
                 $config['patch-entry'][count($config['patch-entry'])] = $vars[1];
-            } elseif (!empty($vars[1])) {
+            }
+            elseif(!empty($vars[1])) {
                 $config[$vars[0]] = $vars[1];
             }
         }
+
         fclose($handle);
     }
 
     ksort($config);
-
     return $config;
 }
 
-function getVersionByBuildConfigHash($hash, $product = "wow")
-{
+function getVersionByBuildConfigHash($hash, $product = "wow") {
     global $pdo;
+
     $query = $pdo->prepare("SELECT * FROM " . $product . "_versions WHERE buildconfig = ?");
     $query->execute([$hash]);
     $row = $query->fetch();
-    if (!empty($row['cdnconfig'])) {
+
+    if(!empty($row['cdnconfig'])) {
         $row['cdnconfig'] = getCDNConfigbyCDNConfigHash($row['cdnconfig'], $product);
     }
-    if (!empty($row['buildconfig'])) {
+
+    if(!empty($row['buildconfig'])) {
         $row['buildconfig'] = getBuildConfigByBuildConfigHash($row['buildconfig'], $product);
     }
+
     return $row;
 }
 
-function getBuildConfigByBuildConfigHash($hash, $product = "wow")
-{
+function getBuildConfigByBuildConfigHash($hash, $product = "wow") {
     global $pdo;
+
     $query = $pdo->prepare("SELECT * FROM " . $product . "_buildconfig WHERE hash = ?");
     $query->execute([$hash]);
     $r = $query->fetch();
-    if (!empty($r)) {
+
+    if(!empty($r)) {
         return $r;
     } else {
         return false;
     }
 }
 
-function getCDNConfigbyCDNConfigHash($hash, $product = "wow")
-{
+function getCDNConfigbyCDNConfigHash($hash, $product = "wow") {
     global $pdo;
+
     $query = $pdo->prepare("SELECT * FROM " . $product . "_cdnconfig WHERE hash = ?");
     $query->execute([$hash]);
     $r = $query->fetch();
-    if (!empty($r)) {
+
+    if(!empty($r)) {
         return $r;
     } else {
         return false;
     }
 }
 
-function getPatchConfigByPatchConfigHash($hash, $product = "wow")
-{
+function getPatchConfigByPatchConfigHash($hash, $product = "wow") {
     global $pdo;
+
     $query = $pdo->prepare("SELECT * FROM " . $product . "_patchconfig WHERE hash = ?");
     $query->execute([$hash]);
     $r = $query->fetch();
-    if (!empty($r)) {
+
+    if(!empty($r)) {
         return $r;
     } else {
         return false;
     }
 }
 
-
-function sendgridMail($to, $subject, $content)
-{
+function sendgridMail($to, $subject, $content) {
     global $sendgrid;
+
     $sendgridData = [
-        'personalizations' =>
-        [
-            [
-                'to' =>
-                [
-                    [
-                        'email' => $to,
-                    ],
-                ],
-                'subject' => $subject,
-            ],
-        ],
-        'from' =>
-        [
+        'personalizations' => [[
+            'to' => [[
+                'email' => $to,
+            ],],
+            'subject' => $subject,
+        ],],
+        'from' => [
             'email' => 'noreply@wow.tools',
         ],
-        'content' =>
-        [
-            [
-                'type' => 'text/plain',
-                'value' => $content,
-            ],
-        ],
+        'content' => [[
+            'type' => 'text/plain',
+            'value' => $content,
+        ],],
     ];
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://api.sendgrid.com/v3/mail/send");
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($sendgridData));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
     $headers = ['Authorization: Bearer ' . $sendgrid['apikey'], 'Content-Type: application/json'];
+
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
     $res = curl_exec($ch);
 }
 
-function getUsernameByUserID($id)
-{
+function getUsernameByUserID($id) {
     global $pdo;
+
     $q = $pdo->prepare("SELECT username FROM users WHERE id = ?");
     $q->execute([$id]);
     $user = $q->fetch();
-    if (empty($user)) {
+
+    if(empty($user)) {
         return false;
     } else {
         return $user['username'];
     }
 }
 
-function githubRequest($path, $data = null)
-{
+function githubRequest($path, $data = null) {
     global $github;
+
     $ch = curl_init('https://api.github.com/' . $path);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    if (!empty($data)) {
+
+    if(!empty($data)) {
         $data_string = json_encode($data);
+
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
     }
@@ -417,34 +452,33 @@ function githubRequest($path, $data = null)
 
     $result = curl_exec($ch);
 
-    if (!$result) {
+    if(!$result) {
         die("An error occured contacting GitHub!");
     }
 
     $json = json_decode($result, true);
 
-    if (!$json) {
+    if(!$json){
         die("An error occured during JSON decoding. cURL result: " . $result);
     }
 
     return $json;
 }
 
-function compareTimestamp($a, $b)
-{
+function compareTimestamp($a, $b) {
     return ($a['timestamp'] < $b['timestamp']);
 }
 
-function getOrCreateVersionID($version)
-{
+function getOrCreateVersionID($version) {
     global $pdo;
 
     $versionCache = [];
-    foreach ($pdo->query("SELECT id, version FROM wow_builds") as $ver) {
+
+    foreach($pdo->query("SELECT id, version FROM wow_builds") as $ver) {
         $versionCache[$ver['version']] = $ver['id'];
     }
 
-    if (!array_key_exists($version, $versionCache)) {
+    if(!array_key_exists($version, $versionCache)) {
         // Version does not exist, create and return id
         echo "Creating version id for " . $version . "\n";
         $expl = explode(".", $version);
@@ -458,8 +492,7 @@ function getOrCreateVersionID($version)
     return $versionCache[$version];
 }
 
-function humanBytes(float $Bytes, int $Precision = 2): string
-{
+function humanBytes(float $Bytes, int $Precision = 2): string {
     if ($Bytes < 1024) {
         return $Bytes . ' B';
     }
@@ -468,11 +501,10 @@ function humanBytes(float $Bytes, int $Precision = 2): string
 
     $i = floor(log($Bytes, 1024));
 
-    return number_format($Bytes / pow(1024, $i), $Precision, '.', '') . ' ' . $Units[ $i ];
+    return number_format($Bytes / pow(1024, $i), $Precision, '.', '') . ' ' . $Units[$i];
 }
 
-function telegramRequest($method, $params)
-{
+function telegramRequest($method, $params) {
     global $telegram;
 
     $payload = http_build_query($params);
@@ -483,33 +515,40 @@ function telegramRequest($method, $params)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array (
         'Content-Type: application/x-www-form-urlencoded',
-        'Content-Length: ' . strlen($payload)));
+        'Content-Length: ' . strlen($payload)
+    ));
 
     $result = curl_exec($ch);
 
-    if (!$result) {
+    if(!$result) {
         die("Error contact Telegram!");
     }
 
     return json_decode($result, true);
 }
 
-function telegramSendMessage($text)
-{
+function telegramSendMessage($text) {
     global $telegram;
 
-    return telegramRequest("sendMessage", array ( "chat_id" => $telegram["chat_id"], "text" => $text, "parse_mode" => "MarkdownV2", "disable_web_page_preview" => true));
+    return telegramRequest("sendMessage", array(
+        "chat_id"                  => $telegram["chat_id"],
+        "text"                     => $text,
+        "parse_mode"               => "MarkdownV2",
+        "disable_web_page_preview" => true
+    ));
 }
 
-function discordSendMessage($message, $channel, $username = "WoW.tools")
-{
-    $json = json_encode([ "username" => $username, "content" => $message]);
+function discordSendMessage($message, $channel, $username = "WoW.tools") {
+    $json = json_encode(["username" => $username, "content" => $message]);
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $channel);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
     curl_setopt($ch, CURLOPT_USERAGENT, "Blizzard Monitor Discord Integration");
     curl_setopt($ch, CURLOPT_HTTPHEADER, ["Length: " . strlen($json), "Content-Type: application/json"]);
+
     curl_exec($ch);
     curl_close($ch);
 }
+?>
