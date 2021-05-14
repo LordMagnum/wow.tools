@@ -4,38 +4,46 @@ require_once(__DIR__ . "/CompareArrays.php");
 require_once(__DIR__ . "/worldStateExpression.php");
 require_once(__DIR__ . "/DBDReader.php");
 
-if(empty($disableBugsnag) && file_exists(__DIR__ . "/bugsnag/autoload.php")){
+if(empty($disableBugsnag) && file_exists(__DIR__ . "/bugsnag/autoload.php")) {
 	require_once(__DIR__ . "/bugsnag/autoload.php");
 }
 
 require_once(__DIR__ . "/db.php");
 
 $dbOptions = [
-  PDO::ATTR_EMULATE_PREPARES   => false,
-  PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-  PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-  PDO::MYSQL_ATTR_LOCAL_INFILE => true
+	PDO::ATTR_EMULATE_PREPARES   => false,
+	PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+	PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+	PDO::MYSQL_ATTR_LOCAL_INFILE => true
 ];
 
-try{
+try {
 	$pdo = new PDO('mysql:host=localhost;dbname=' . $db, $dbuser, $dbpassword, $dbOptions);
 }
-catch(Exception $e){
+catch(Exception $e) {
 	die("Unable to connect to database: " . $e->getMessage());
 }
 
 $allowedproducts = array(
-	"wow" => array("name" => "World of Warcraft", "cdndir" => "wow", "ngdp" => array("wow", "wowt", "wow_beta", "wow_classic_beta", "wow_classic", "wowz")),
-	"catalogs" => array("name" => "Catalog", "cdndir" => "catalogs", "ngdp" => array("catalogs")),
-	"agent" => array("name" => "Agent", "cdndir" => "bnt001", "ngdp" => array("agent"), "loggedinonly" => true)
+	"wow"      => array("name" => "World of Warcraft", "cdndir" => "wow", "ngdp"      => array("wow", "wowt", "wow_beta", "wow_classic_beta", "wow_classic", "wowz")),
+	"catalogs" => array("name" => "Catalog", "cdndir"           => "catalogs", "ngdp" => array("catalogs")),
+	"agent"    => array("name" => "Agent", "cdndir"             => "bnt001", "ngdp"   => array("agent"), "loggedinonly" => true)
 );
 
-$previewTypes = array("ogg", "mp3", "blp", "wmo", "_xxxwmo", "adt", "m2");
+$previewTypes = array(
+	"ogg",
+	"mp3",
+	"blp",
+	"wmo",
+	"_xxxwmo",
+	"adt",
+	"m2"
+);
 
 $memcached = new Memcached('wowtools');
-if(empty($memcached->getServerList()))
-{
-	$memcached->addServer( '/var/run/memcached/memcached.sock', 0 );
+
+if(empty($memcached->getServerList())) {
+	$memcached->addServer('/var/run/memcached/memcached.sock', 0);
 }
 
 $github['oath'] = '';
@@ -71,9 +79,9 @@ $sendgrid['apikey'] = "";
 
 $github['username'] = "";
 $github['oauthkey'] = "";
-if(php_sapi_name() != 'cli')
-{
-	if(!isset($_SESSION)){
+
+if(php_sapi_name() != 'cli') {
+	if(!isset($_SESSION)) {
 		session_set_cookie_params(28800, '/', "wow.tools", true, true);
 		session_name('wowtools');
 		session_start();
